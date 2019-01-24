@@ -100,5 +100,88 @@ modify cert permission with:
 
 	yum install -y kubectl
 
+
+# Install kubernetes by terraform-kubernetes-installer
+
+## Preparation
+
+Install terraform:
+
+	https://www.terraform.io/downloads.html
+
+Clone installer:
+
+	git clone https://github.com/oracle/terraform-kubernetes-installer
+
+## Modify config files
+
+variables.tf:
 	
+	variable "ssh_public_key_openssh" {
+	  description = "SSH public key in OpenSSH authorized_keys format for instances (generated if left blank)"
+	  type        = "string"
+	  default     = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDK47ExQdjngF4l85VDBKJmZ+V4ofHEROlwxmWyhqocPpfczfM8xpgYivEBUaiXJnjjrrWTuQ6xiBSUW+y8mra+50TDFMwxMNv939c0Ogba8GKIKaM5JGFdAwFGUtiwBiD2TfEYWMylM3gHsrphNQ5qxAXKeyuIcIO+2sijtsAquxdzvWj1gjnjHQ2zK/EQuhcRHboXLNHr2vzcIsU3+14NaHj8L4GMqsxQPqHXclYJ50vERQ9DZMJZ1PscfPx8ujNyCYW9I4TXwWX86IZPDdhZ8eTSqKqSShhNYrM1Kui2GWNBPMW6Pg7/RUnKlnWwxTv+56/EPOY/qb84AWj2XP3j gniu@gniu-ipro"
+	}
+	
+	variable "ssh_private_key" {
+	  description = "SSH private key used for instances (generated if left blank)"
+	  type        = "string"
+	  default     = "/Users/gniu/.certs/sshkey"
+	}
+
+
+terraform.tfvars
+
+	tenancy_ocid = "ocid1.tenancy.oc1..xxxx"
+	compartment_ocid = "ocid1.compartment.oc1..xxx"
+	fingerprint = "71:4c:01:08:52:35:0f:3d:3e:08:25:69"
+	private_key_path = "/Users/gniu/.certs/apikey.pem"
+	user_ocid = "ocid1.user.oc1..xxxx"
+	region = "us-phoenix-1"
+
+	etcdShape = "VM.Standard2.1"
+	k8sMasterShape = "VM.Standard2.1"
+	k8sWorkerShape = "VM.Standard2.1"
+
+	etcdAd1Count = "0"
+	etcdAd2Count = "1"
+	etcdAd3Count = "0"
+
+	k8sWorkerAd1Count = "0"
+	k8sWorkerAd2Count = "0"
+	k8sWorkerAd3Count = "1"
+
+	etcdLBShape = "400Mbps"
+	k8sMasterLBShape = "400Mbps"
+
+	etcd_ssh_ingress = "0.0.0.0/0"
+
+	master_ssh_ingress = "0.0.0.0/0"
+	master_https_ingress = "0.0.0.0/0"
+	master_nodeport_ingress = "0.0.0.0/0"
+
+	worker_nodeport_ingress = "0.0.0.0/0"
+	worker_ssh_ingress = "0.0.0.0/0"
+
+
+## Create k8s cluster
+
+	terraform init
+	terraform plan
+	terraform apply
+
+## Testing
+
+~/.bash_profile
+
+	export KUBECONFIG=/Users/gniu/Workspaces/terraform-kubernetes-installer/generated/kubeconfig
+
+Start proxy:
+
+	kubectl proxy
+
+Access url with your web browser:
+
+	http://localhost:8001/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy/#!/overview?namespace=default
+
 
